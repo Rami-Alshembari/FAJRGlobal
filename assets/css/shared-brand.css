@@ -1,0 +1,137 @@
+:root {
+  --fajr-navy: #173347;
+  --fajr-teal: #157a75;
+  --fajr-gold: #b88746;
+  --fajr-stone: #f6f4ef;
+  --fajr-surface: rgba(255, 255, 255, 0.94);
+  --fajr-border: rgba(20, 41, 57, 0.1);
+  --fajr-muted: #596d7a;
+  --fajr-muted-soft: #7a8a95;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: "Manrope", "Avenir Next", "Segoe UI", sans-serif;
+  color: var(--fajr-navy);
+  background: var(--fajr-stone);
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.fajr-brandbar {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  width: min(1100px, calc(100vw - 32px));
+  margin: 24px auto 0;
+  padding: 16px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid var(--fajr-border);
+  border-radius: 24px;
+  box-shadow: 0 14px 36px rgba(20, 41, 57, 0.08);
+  backdrop-filter: blur(12px);
+}
+
+.fajr-brandbar__brand {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-width: 0;
+}
+
+.fajr-brandbar__logo {
+  width: 58px;
+  height: 58px;
+  object-fit: contain;
+  border-radius: 16px;
+  padding: 6px;
+  background: #fff;
+  box-shadow: 0 10px 24px rgba(20, 41, 57, 0.1);
+}
+
+.fajr-brandbar__eyebrow {
+  margin: 0 0 4px;
+  color: var(--fajr-teal);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.fajr-brandbar__title {
+  margin: 0;
+  color: var(--fajr-navy);
+  font-family: "Fraunces", Georgia, serif;
+  font-size: 1.2rem;
+  line-height: 1.1;
+}
+
+.fajr-brandbar__nav {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.fajr-brandbar__nav a {
+  padding: 10px 14px;
+  border-radius: 999px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--fajr-muted);
+  transition: background-color 180ms ease, color 180ms ease, transform 180ms ease;
+}
+
+.fajr-brandbar__nav a:hover,
+.fajr-brandbar__nav a.is-active {
+  color: var(--fajr-navy);
+  background: rgba(23, 51, 71, 0.08);
+  transform: translateY(-1px);
+}
+
+.fajr-tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 8px 12px;
+  border-radius: 999px;
+  background: rgba(21, 122, 117, 0.1);
+  color: var(--fajr-teal);
+  font-size: 0.76rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.fajr-tag--navy {
+  background: rgba(23, 51, 71, 0.09);
+  color: var(--fajr-navy);
+}
+
+.fajr-tag--gold {
+  background: rgba(184, 135, 70, 0.12);
+  color: var(--fajr-gold);
+}
+
+@media (max-width: 860px) {
+  .fajr-brandbar {
+    position: static;
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .fajr-brandbar__nav {
+    justify-content: flex-start;
+  }
+}

@@ -1,0 +1,32 @@
+.page-program {
+  gap: 22px;
+}
+
+.program-layout {
+  display: grid;
+  gap: 22px;
+}
+
+.program-summary {
+  display: grid;
+  gap: 18px;
+}
+
+.program-chart-panel {
+  min-height: 100%;
+}
+
+.program-story {
+  display: grid;
+  gap: 14px;
+}
+
+.program-story p {
+  margin: 0;
+  color: var(--text-soft);
+  line-height: 1.7;
+}
+
+.program-shell-title {
+  margin: 0;
+}

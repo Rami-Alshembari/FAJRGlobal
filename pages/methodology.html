@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Methodology and implementation notes for the FAJR Global Gaza unified dashboard.">
+  <title>Data & Methodology | FAJR Global Gaza Impact Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Fraunces:opsz,wght@9..144,600;9..144,700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../assets/css/main.css">
+  <link rel="stylesheet" href="../assets/css/components.css">
+  <link rel="stylesheet" href="../assets/css/pages.css">
+</head>
+<body data-page="methodology">
+  <div class="site-shell">
+    <header class="site-header">
+      <a class="brand" href="../index.html">
+        <img src="../assets/images/logo-navy.png" alt="FAJR Global logo" class="brand__logo">
+        <div>
+          <p class="eyebrow">Unified Reporting Portal</p>
+          <h1 class="brand__title">FAJR Global Gaza Impact Dashboard</h1>
+        </div>
+      </a>
+      <nav class="site-nav" aria-label="Primary">
+        <a href="../index.html" data-nav="general">General Projects</a>
+        <a href="public-aid-hospital.html" data-nav="hospital">Public Aid Hospital</a>
+        <a href="vouchers.html" data-nav="vouchers">Vouchers</a>
+        <a href="methodology.html" data-nav="methodology">Methodology</a>
+      </nav>
+      <div class="header-actions">
+        <button type="button" class="button button--ghost" data-action="print">Print</button>
+      </div>
+    </header>
+
+    <main class="page">
+      <section class="hero-panel hero-panel--compact">
+        <div class="hero-copy">
+          <p class="eyebrow">Implementation Notes</p>
+          <h2>Data sources, unification approach, and extension path.</h2>
+          <p class="hero-text">
+            The master dashboard uses a shared design system and centralized configuration to present three existing dashboards
+            as one reporting platform while preserving the original detailed analytics in embedded module views.
+          </p>
+        </div>
+      </section>
+
+      <section class="section two-column">
+        <article class="panel">
+          <div class="panel__header">
+            <div>
+              <p class="eyebrow">What Changed</p>
+              <h3>System-wide unification</h3>
+            </div>
+          </div>
+          <div class="rich-list">
+            <div><strong>New master entry point:</strong> `index.html` now acts as the executive homepage for all Gaza reporting streams.</div>
+            <div><strong>Shared design language:</strong> typography, spacing, cards, buttons, panels, and page shells are standardized across the new portal.</div>
+            <div><strong>Program modules:</strong> each source dashboard now has a dedicated page inside the portal with unified context, KPIs, narrative, and embedded detail view.</div>
+            <div><strong>Centralized data layer:</strong> `assets/js/config.js` stores program metadata, headline KPIs, notes, and chart definitions in one place.</div>
+          </div>
+        </article>
+        <article class="panel">
+          <div class="panel__header">
+            <div>
+              <p class="eyebrow">Navigation Logic</p>
+              <h3>How movement works</h3>
+            </div>
+          </div>
+          <div class="rich-list">
+            <div><strong>Top navigation:</strong> persistent access to overview, each program module, and methodology.</div>
+            <div><strong>Overview cards:</strong> each program card links directly into its module page.</div>
+            <div><strong>Program pages:</strong> each module includes a contextual summary above the preserved legacy dashboard for deeper analysis.</div>
+            <div><strong>Back to overview:</strong> every module page keeps a return action in the header.</div>
+          </div>
+        </article>
+      </section>
+
+      <section class="section two-column">
+        <article class="panel">
+          <div class="panel__header">
+            <div>
+              <p class="eyebrow">Style Unification</p>
+              <h3>How consistency is applied</h3>
+            </div>
+          </div>
+          <div class="rich-list">
+            <div><strong>Color system:</strong> white and stone surfaces, navy text, and restrained teal and gold accents.</div>
+            <div><strong>Type hierarchy:</strong> Fraunces is used for strategic headings and Manrope for interface and analytical text.</div>
+            <div><strong>Interaction layer:</strong> shared hover states, subtle elevation, responsive grids, and KPI count-up animations are handled by shared assets.</div>
+            <div><strong>Legacy preservation:</strong> the source dashboards remain intact and are surfaced inside a controlled frame shell rather than rewritten destructively.</div>
+          </div>
+        </article>
+        <article class="panel">
+          <div class="panel__header">
+            <div>
+              <p class="eyebrow">How To Extend</p>
+              <h3>Adding future dashboards</h3>
+            </div>
+          </div>
+          <div class="rich-list">
+            <div><strong>Step 1:</strong> add a new program object to `assets/js/config.js` with title, metrics, narrative, and legacy source path.</div>
+            <div><strong>Step 2:</strong> create a new page in `pages/` using the same shell pattern and set `data-program` to the new key.</div>
+            <div><strong>Step 3:</strong> add the page to the site navigation and overview module cards.</div>
+            <div><strong>Step 4:</strong> if deeper integration is needed later, replace the legacy iframe with a fully refactored module while keeping the shared shell.</div>
+          </div>
+        </article>
+      </section>
+
+      <section class="section">
+        <article class="panel panel--wide">
+          <div class="panel__header">
+            <div>
+              <p class="eyebrow">Source Inputs</p>
+              <h3>Files used in this unified portal</h3>
+            </div>
+          </div>
+          <div class="source-list">
+            <code>/Volumes/Extreme Pro/Data_Science/FAJR Global Gaza/FAJR Gaza Project General/index.html</code>
+            <code>/Volumes/Extreme Pro/Data_Science/FAJR Global Gaza/Public aid/dashboard.html</code>
+            <code>/Volumes/Extreme Pro/Data_Science/FAJR Global Gaza/Vouchers/fajr-dashboard.html</code>
+            <code>/Volumes/Extreme Pro/Data_Science/FAJR Global Gaza/FAJR Gaza Project General/data/portfolio-data.json</code>
+          </div>
+        </article>
+      </section>
+    </main>
+  </div>
+
+  <script src="../assets/js/config.js"></script>
+  <script src="../assets/js/app.js"></script>
+</body>
+</html>

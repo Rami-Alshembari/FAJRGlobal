@@ -100,7 +100,7 @@ window.FAJR_MASTER_CONFIG = {
       category: ["relief", "education"],
       icon: "G",
       page: "pages/general-projects.html",
-      legacyPath: "../../FAJR Gaza Project General/index.html",
+      legacyPath: "../legacy/general-projects/index.html",
       legacyLabel: "Open original portfolio dashboard",
       summary: "Executive portfolio tracking for projects, budgets, beneficiaries, locations, sectors, and implementation timelines.",
       narrative: [
@@ -151,7 +151,7 @@ window.FAJR_MASTER_CONFIG = {
       category: ["health"],
       icon: "H",
       page: "pages/public-aid-hospital.html",
-      legacyPath: "../../Public aid/dashboard.html",
+      legacyPath: "../legacy/public-aid-hospital/dashboard.html",
       legacyLabel: "Open original hospital dashboard",
       summary: "Hospital service reporting covering surgeries, clinic visits, ward admissions, departmental load, and weekly care trends.",
       narrative: [
@@ -202,7 +202,7 @@ window.FAJR_MASTER_CONFIG = {
       category: ["market", "relief"],
       icon: "V",
       page: "pages/vouchers.html",
-      legacyPath: "../../Vouchers/fajr-dashboard.html?embed=1",
+      legacyPath: "../legacy/vouchers/fajr-dashboard.html?embed=1",
       legacyLabel: "Open original voucher dashboard",
       summary: "Voucher consumption analytics covering item demand, unit mix, concentration, and detailed ranked consumption tables.",
       narrative: [

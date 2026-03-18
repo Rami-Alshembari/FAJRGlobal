@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="FAJR Global executive portfolio dashboard for projects, funding, reach, and delivery analysis.">
+  <title>FAJR Global | Projects Impact Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Fraunces:opsz,wght@9..144,600;9..144,700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="../../shared-brand.css">
+</head>
+<body>
+  <div class="fajr-brandbar">
+    <a class="fajr-brandbar__brand" href="../../index.html">
+      <img src="FAJR_Global_Logo_WO_Tagline_Navy.png" alt="FAJR Global logo" class="fajr-brandbar__logo">
+      <div>
+        <p class="fajr-brandbar__eyebrow">FAJR Global Gaza</p>
+        <p class="fajr-brandbar__title">Projects Dashboard</p>
+      </div>
+    </a>
+    <nav class="fajr-brandbar__nav" aria-label="Dashboard navigation">
+      <a href="index.html" class="is-active">General Projects</a>
+      <a href="../public-aid-hospital/dashboard.html">Public Aid Hospital</a>
+      <a href="../vouchers/fajr-dashboard.html">Vouchers</a>
+    </nav>
+  </div>
+  <div class="page-shell">
+    <header class="hero">
+      <div class="hero__brand">
+        <img src="FAJR_Global_Logo_WO_Tagline_Navy.png" alt="FAJR Global logo" class="hero__logo">
+        <div>
+          <p class="eyebrow">Executive Portfolio Review</p>
+          <h1>Projects Impact Dashboard</h1>
+          <p class="hero__lede">
+            A donor-ready analytical review of FAJR Global’s active project portfolio, combining funding visibility,
+            beneficiary reach, sector concentration, implementation timing, and qualitative impact signals from the source workbook.
+          </p>
+        </div>
+      </div>
+      <div class="hero__side">
+        <div class="summary-panel">
+          <p class="summary-panel__label">Strategic snapshot</p>
+          <p class="summary-panel__text" id="hero-summary"></p>
+          <div class="summary-panel__meta">
+            <span id="generated-at"></span>
+            <span>Source: Projects Data sheet</span>
+          </div>
+        </div>
+        <div class="hero__actions">
+          <button class="button button--ghost" id="print-button" type="button">Print / Save PDF</button>
+          <button class="button" id="download-data" type="button">Download Clean Data</button>
+        </div>
+      </div>
+    </header>
+
+    <main>
+      <section class="section">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">Executive Summary</p>
+            <h2>Portfolio at a glance</h2>
+          </div>
+        </div>
+        <div class="kpi-grid" id="kpi-grid"></div>
+      </section>
+
+      <section class="section controls-panel">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">Interactive Filters</p>
+            <h2>Refine the portfolio view</h2>
+          </div>
+          <p class="section-heading__text">
+            Use the filters below to narrow the evidence base by geography, sector, funding source, or project text.
+          </p>
+        </div>
+        <div class="filters">
+          <label class="field">
+            <span>Sector</span>
+            <select id="sector-filter"></select>
+          </label>
+          <label class="field">
+            <span>Location</span>
+            <select id="location-filter"></select>
+          </label>
+          <label class="field">
+            <span>Funding Source</span>
+            <select id="funding-filter"></select>
+          </label>
+          <label class="field field--search">
+            <span>Search Projects</span>
+            <input id="search-filter" type="search" placeholder="Search by project name, ID, sector, or location">
+          </label>
+        </div>
+      </section>
+
+      <section class="section section--insights">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">Portfolio Overview</p>
+            <h2>Executive observations</h2>
+          </div>
+          <p class="section-heading__text" id="analysis-overview"></p>
+        </div>
+        <div class="insight-grid" id="insight-grid"></div>
+      </section>
+
+      <section class="section chart-layout">
+        <div class="panel panel--wide">
+          <div class="panel__header">
+            <div>
+              <p class="eyebrow">Sector Distribution</p>
+              <h3>Projects by sector</h3>
+            </div>
+            <p class="panel__annotation" id="sector-annotation"></p>
+          </div>
+          <div id="sector-chart" class="chart"></div>
+        </div>
+      </section>
+
+      <section class="section chart-layout">
+        <div class="panel panel--wide">
+          <div class="panel__header">
+            <div>
+              <p class="eyebrow">Geographic Footprint</p>
+              <h3>Projects by location</h3>
+            </div>
+            <p class="panel__annotation" id="location-annotation"></p>
+          </div>
+          <div id="location-chart" class="chart"></div>
+        </div>
+        <div class="panel">
+          <div class="panel__header">
+            <div>
+              <p class="eyebrow">Reach by place</p>
+              <h3>Beneficiaries by location</h3>
+            </div>
+          </div>
+          <div id="location-beneficiaries" class="metric-stack"></div>
+        </div>
+      </section>
+
+      <section class="section chart-layout">
+        <div class="panel">
+          <div class="panel__header">
+            <div>
+              <p class="eyebrow">Funding Analysis</p>
+              <h3>Budget by project</h3>
+            </div>
+            <p class="panel__annotation">Projects with unconfirmed budgets are disclosed separately.</p>
+          </div>
+          <div id="budget-chart" class="chart"></div>
+        </div>
+        <div class="panel">
+          <div class="panel__header">
+            <div>
+              <p class="eyebrow">Beneficiary Analysis</p>
+              <h3>Beneficiaries by project</h3>
+            </div>
+            <p class="panel__annotation" id="beneficiary-annotation"></p>
+          </div>
+          <div id="beneficiaries-chart" class="chart"></div>
+        </div>
+      </section>
+
+      <section class="section chart-layout">
+        <div class="panel">
+          <div class="panel__header">
+            <div>
+              <p class="eyebrow">Efficiency Lens</p>
+              <h3>Budget versus beneficiaries</h3>
+            </div>
+            <p class="panel__annotation">Indicative only. Program intensity varies by intervention design.</p>
+          </div>
+          <div id="scatter-chart" class="chart"></div>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="panel panel--wide">
+          <div class="panel__header">
+            <div>
+              <p class="eyebrow">Project Timeline</p>
+              <h3>Program cadence across the portfolio</h3>
+            </div>
+            <p class="panel__annotation" id="timeline-annotation"></p>
+          </div>
+          <div id="timeline-chart" class="chart chart--timeline"></div>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">Impact Narratives</p>
+            <h2>Human-centered delivery highlights</h2>
+          </div>
+          <p class="section-heading__text">
+            Qualitative project narratives are presented as short evidence notes to complement the quantitative portfolio view.
+          </p>
+        </div>
+        <div class="story-grid" id="story-grid"></div>
+      </section>
+
+      <section class="section section--compact">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">Project Register</p>
+            <h2>Filterable portfolio table</h2>
+          </div>
+          <p class="section-heading__text">
+            Click any table header to sort. Selecting a project in a chart highlights the same row where possible.
+          </p>
+        </div>
+        <div class="table-shell">
+          <table class="project-table">
+            <thead id="table-head"></thead>
+            <tbody id="table-body"></tbody>
+          </table>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <div class="tooltip" id="tooltip" role="status" aria-live="polite"></div>
+
+  <script src="data/portfolio-data.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

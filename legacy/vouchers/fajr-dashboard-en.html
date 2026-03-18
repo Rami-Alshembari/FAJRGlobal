@@ -1,0 +1,870 @@
+<!doctype html>
+<html lang="en" dir="ltr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>FAJR Voucher Program Dashboard - Ramadan</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Manrope:wght@300;400;600;700;800&family=Montserrat:wght@500;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg1: #f6f4ef;
+      --bg2: #e8f0f5;
+      --bg3: #f3f6ff;
+      --card: #ffffff;
+      --ink: #1a2535;
+      --muted: #5c6f7b;
+      --accent: #157a75;
+      --accent-2: #173347;
+      --accent-3: #b66a57;
+      --gold: #b88746;
+      --grid: rgba(23, 51, 71, 0.09);
+      --shadow: 0 10px 30px rgba(23, 51, 71, 0.09);
+      --shadow-strong: 0 18px 50px rgba(23, 51, 71, 0.14);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: 'Manrope', 'Montserrat', system-ui, -apple-system, 'Segoe UI', sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(900px 520px at 90% -10%, #fff2d8 0%, transparent 65%),
+        radial-gradient(700px 380px at -10% 20%, #e9f2ff 0%, transparent 60%),
+        linear-gradient(135deg, var(--bg1), var(--bg2) 45%, var(--bg3));
+    }
+    body.embed {
+      background: transparent;
+    }
+    body::before,
+    body::after {
+      content: '';
+      position: fixed;
+      z-index: -1;
+      inset: auto;
+      width: 320px;
+      height: 320px;
+      border-radius: 50%;
+      filter: blur(40px);
+      opacity: 0.4;
+      animation: float 16s ease-in-out infinite;
+    }
+    body::before {
+      background: rgba(11, 107, 95, 0.18);
+      top: 10%;
+      left: -80px;
+    }
+    body::after {
+      background: rgba(31, 91, 143, 0.2);
+      bottom: 5%;
+      right: -120px;
+      animation-delay: 2s;
+    }
+    body.embed::before,
+    body.embed::after {
+      display: none;
+    }
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-18px); }
+    }
+
+    header {
+      padding: 32px 24px 8px;
+      text-align: left;
+    }
+    body.embed header {
+      display: none;
+    }
+    header .title {
+      display: grid;
+      gap: 8px;
+    }
+    header h1 {
+      margin: 0;
+      font-size: 30px;
+      letter-spacing: 0.2px;
+    }
+    header p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 14px;
+    }
+    .brand-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .logo {
+      height: 42px;
+      width: auto;
+      object-fit: contain;
+    }
+    .embed-brand {
+      display: none;
+      align-items: center;
+      gap: 12px;
+      padding: 6px 4px 0;
+    }
+    .embed-brand .logo {
+      height: 34px;
+    }
+    .embed-title {
+      font-size: 14px;
+      font-weight: 700;
+    }
+    .embed-sub {
+      font-size: 12px;
+      color: var(--muted);
+    }
+    body.embed .embed-brand {
+      display: flex;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 24px 40px;
+    }
+    body.embed .container {
+      padding-top: 8px;
+      padding-bottom: 8px;
+    }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 12px;
+      border-radius: 999px;
+      background: rgba(11, 107, 95, 0.1);
+      color: var(--accent);
+      font-size: 12px;
+      width: fit-content;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap: 16px;
+    }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--grid);
+      border-radius: 18px;
+      padding: 18px;
+      box-shadow: var(--shadow);
+      opacity: 0;
+      transform: translateY(18px);
+      transition: opacity 600ms ease, transform 600ms ease, box-shadow 300ms ease;
+    }
+    .card.is-visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    .card:hover {
+      box-shadow: var(--shadow-strong);
+      transform: translateY(-2px);
+    }
+    .card h3 {
+      margin: 0 0 12px;
+      font-size: 16px;
+    }
+    .summary {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+      gap: 12px;
+    }
+    .metric {
+      background: #fbfbfc;
+      border: 1px solid var(--grid);
+      border-radius: 14px;
+      padding: 12px;
+      transition: transform 300ms ease, box-shadow 300ms ease;
+    }
+    .metric:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 20px rgba(0,0,0,0.06);
+    }
+    .metric h3 {
+      margin: 0;
+      font-size: 22px;
+      color: var(--accent);
+      font-family: 'Fraunces', 'Manrope', 'Montserrat', sans-serif;
+      letter-spacing: 0.3px;
+    }
+    .metric span {
+      font-size: 12px;
+      color: var(--muted);
+    }
+    .controls {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 12px;
+    }
+    label {
+      font-size: 12px;
+      color: var(--muted);
+      display: block;
+      margin-bottom: 6px;
+    }
+    input, select {
+      width: 100%;
+      padding: 10px 12px;
+      border-radius: 10px;
+      border: 1px solid var(--grid);
+      font-family: inherit;
+      font-size: 14px;
+      background: #fff;
+      transition: border 200ms ease, box-shadow 200ms ease;
+    }
+    input:focus, select:focus {
+      outline: none;
+      border-color: rgba(11, 107, 95, 0.5);
+      box-shadow: 0 0 0 3px rgba(11, 107, 95, 0.15);
+    }
+    .note {
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 8px;
+    }
+    .chart-wrap {
+      height: 280px;
+      position: relative;
+    }
+    .chart-wrap.tall {
+      height: 360px;
+    }
+    .list {
+      display: grid;
+      gap: 10px;
+    }
+    .list-item {
+      display: grid;
+      gap: 6px;
+    }
+    .list-item .row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 13px;
+      color: var(--muted);
+    }
+    .bar {
+      height: 10px;
+      border-radius: 999px;
+      background: #f1f3f5;
+      overflow: hidden;
+    }
+    .bar span {
+      display: block;
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, var(--accent), var(--accent-2));
+      transition: width 900ms ease;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+    th, td {
+      padding: 8px 10px;
+      border-bottom: 1px solid var(--grid);
+      text-align: left;
+      white-space: nowrap;
+    }
+    thead {
+      position: sticky;
+      top: 0;
+      background: #fff;
+      z-index: 2;
+    }
+    th {
+      font-size: 12px;
+      color: var(--muted);
+      border-bottom: 2px solid rgba(21, 122, 117, 0.2);
+    }
+    tbody tr {
+      transition: background 200ms ease;
+    }
+    tbody tr:nth-child(even) {
+      background: rgba(23, 51, 71, 0.025);
+    }
+    tbody tr:hover {
+      background: rgba(21, 122, 117, 0.06);
+    }
+    tbody tr:nth-child(even):hover {
+      background: rgba(21, 122, 117, 0.06);
+    }
+    .tag {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 999px;
+      background: #f0f7f6;
+      color: var(--accent);
+      font-size: 12px;
+    }
+    .insight {
+      display: grid;
+      gap: 8px;
+      font-size: 14px;
+      color: var(--muted);
+    }
+    .insight strong {
+      color: var(--ink);
+      font-weight: 700;
+    }
+    .loader {
+      position: fixed;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      background: rgba(255, 255, 255, 0.85);
+      backdrop-filter: blur(6px);
+      z-index: 999;
+      opacity: 1;
+      transition: opacity 500ms ease;
+    }
+    .loader.hidden {
+      opacity: 0;
+      pointer-events: none;
+    }
+    .loader-card {
+      width: min(360px, 90vw);
+      border-radius: 14px;
+      background: #fff;
+      border: 1px solid var(--grid);
+      padding: 18px;
+      box-shadow: var(--shadow);
+      text-align: left;
+    }
+    .loader-bar {
+      height: 8px;
+      border-radius: 999px;
+      background: #f1f3f5;
+      overflow: hidden;
+      margin-top: 12px;
+    }
+    .loader-bar span {
+      display: block;
+      height: 100%;
+      width: 40%;
+      background: linear-gradient(90deg, var(--accent), var(--accent-2));
+      animation: shimmer 1.2s ease-in-out infinite;
+    }
+    @keyframes shimmer {
+      0% { transform: translateX(-60%); }
+      100% { transform: translateX(160%); }
+    }
+    @media (max-width: 960px) {
+      .grid { grid-template-columns: repeat(6, 1fr); }
+      .card[style*="span 8"] { grid-column: span 6 !important; }
+      .card[style*="span 4"] { grid-column: span 6 !important; }
+      .card[style*="span 12"] { grid-column: span 6 !important; }
+    }
+    @media (max-width: 700px) {
+      .grid { grid-template-columns: repeat(2, 1fr); }
+      .card[style*="span 8"],
+      .card[style*="span 4"],
+      .card[style*="span 12"] { grid-column: span 2 !important; }
+      header { padding: 26px 20px 6px; }
+      .container { padding: 0 20px 32px; }
+      th, td { white-space: normal; }
+      .brand-row { flex-direction: column; align-items: flex-start; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      body::before, body::after { animation: none; }
+      .card { transition: none; opacity: 1; transform: none; }
+      .bar span { transition: none; }
+      .metric, .card { box-shadow: var(--shadow); }
+      .loader { display: none; }
+    }
+  </style>
+  <link rel="stylesheet" href="../../shared-brand.css" />
+</head>
+<body>
+  <div class="fajr-brandbar">
+    <a class="fajr-brandbar__brand" href="../../index.html">
+      <img src="FAJR_Global_Logo_WO_Tagline_Navy.png" alt="FAJR Global logo" class="fajr-brandbar__logo">
+      <div>
+        <p class="fajr-brandbar__eyebrow">FAJR Global Gaza</p>
+        <p class="fajr-brandbar__title">Voucher Dashboard</p>
+      </div>
+    </a>
+    <nav class="fajr-brandbar__nav" aria-label="Dashboard navigation">
+      <a href="../general-projects/index.html">General Projects</a>
+      <a href="../public-aid-hospital/dashboard.html">Public Aid Hospital</a>
+      <a href="fajr-dashboard-en.html" class="is-active">Vouchers</a>
+    </nav>
+  </div>
+
+  <div class="loader" id="loader">
+    <div class="loader-card">
+      <div style="font-weight:700; color: var(--ink);">Preparing dashboard…</div>
+      <div style="font-size:12px; color: var(--muted);">This may take a few seconds</div>
+      <div class="loader-bar"><span></span></div>
+    </div>
+  </div>
+
+  <header>
+    <div class="title">
+      <div class="brand-row">
+        <img src="FAJR_Global_Logo_WO_Tagline_Navy.png" alt="FAJR" class="logo" />
+        <span class="badge">FAJR Voucher Program · Ramadan</span>
+      </div>
+      <h1>Item Demand Dashboard</h1>
+      <p>Instant view of the most purchased items</p>
+    </div>
+  </header>
+
+  <div class="container">
+    <div class="embed-brand">
+      <img src="FAJR_Global_Logo_WO_Tagline_Navy.png" alt="FAJR" class="logo" />
+      <div>
+        <div class="embed-title">FAJR Voucher Program</div>
+        <div class="embed-sub">Ramadan Purchases Dashboard</div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-bottom:16px;">
+      <div class="summary" id="summary"></div>
+    </div>
+
+    <div class="card" style="margin-bottom:16px;">
+      <div class="controls">
+        <div>
+          <label>Search for an item</label>
+          <input id="searchInput" type="text" placeholder="Example: sugar" />
+        </div>
+        <div>
+          <label>Filter by unit</label>
+          <select id="unitSelect"></select>
+        </div>
+        <div>
+          <label>Top item count</label>
+          <input id="topN" type="number" min="5" max="100" step="5" value="20" />
+        </div>
+      </div>
+      <div class="note" id="unitNote"></div>
+    </div>
+
+    <div class="grid">
+      <div class="card" style="grid-column: span 8;">
+        <h3>Most Purchased Items (Top N)</h3>
+        <div class="chart-wrap tall">
+          <canvas id="topItemsChart"></canvas>
+        </div>
+      </div>
+      <div class="card" style="grid-column: span 4;">
+        <h3>Top 5 Items</h3>
+        <div class="list" id="topList"></div>
+      </div>
+      <div class="card" style="grid-column: span 12;">
+        <h3>Top Items Distribution (Bars)</h3>
+        <div class="chart-wrap">
+          <canvas id="paretoChart"></canvas>
+        </div>
+      </div>
+      <div class="card" style="grid-column: span 12;">
+        <h3>Share of Top Items</h3>
+        <div class="chart-wrap">
+          <canvas id="shareChart"></canvas>
+        </div>
+      </div>
+      <div class="card" style="grid-column: span 12;">
+        <h3>Quick Insights</h3>
+        <div class="insight" id="insights"></div>
+      </div>
+      <div class="card" style="grid-column: span 12;">
+        <h3>Detailed Table</h3>
+        <div style="overflow:auto;">
+          <table>
+            <thead>
+              <tr>
+                <th>Rank</th>
+                <th>Item</th>
+                <th>Unit</th>
+                <th>Quantity</th>
+                <th>Share %</th>
+              </tr>
+            </thead>
+            <tbody id="tableBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <script src="../../shared-utils.js"></script>
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('embed') === '1') {
+      document.body.classList.add('embed');
+    }
+    const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (window.FAJR) FAJR.applyChartDefaults();
+
+    const BRAND_COLORS = [
+      '#157a75', '#173347', '#b66a57', '#b88746',
+      '#2a9d8f', '#5c6f7b', '#8ecae6', '#b56576', '#264653'
+    ];
+
+    const payload = {
+      "data": [
+        {"item": "Maggi chicken stock cube", "unit": "Piece", "quantity": 1584.0},
+        {"item": "Obour Land feta cheese 250 g", "unit": "Can", "quantity": 1256.0},
+        {"item": "Sugar 1 kg (paper pack)", "unit": "Pack", "quantity": 1014.0},
+        {"item": "Tang powdered drink 5 g", "unit": "Piece", "quantity": 651.0},
+        {"item": "Local potatoes", "unit": "Kg", "quantity": 635.29},
+        {"item": "Rhodes feta cheese 250 g", "unit": "Piece", "quantity": 621.0},
+        {"item": "Sheikh Qassem baking powder 10 g", "unit": "Piece", "quantity": 520.0},
+        {"item": "Nescafe coffee whitener 18 g", "unit": "Stick", "quantity": 399.0},
+        {"item": "Onions", "unit": "Kg", "quantity": 316.11},
+        {"item": "Torabika instant coffee 25 g", "unit": "Piece", "quantity": 308.0},
+        {"item": "Tomatoes", "unit": "Kg", "quantity": 303.04},
+        {"item": "Egg carton", "unit": "Carton", "quantity": 282.0},
+        {"item": "Najjar cheese triangles 8 pcs", "unit": "Piece", "quantity": 277.0},
+        {"item": "Borda Fresh strawberry drink 9 g", "unit": "Pack", "quantity": 277.0},
+        {"item": "Snickers chocolate 40 g", "unit": "Piece", "quantity": 263.0},
+        {"item": "Good Day cappuccino 25 g", "unit": "Pack", "quantity": 244.0},
+        {"item": "Cucumbers", "unit": "Kg", "quantity": 237.29},
+        {"item": "Al-Bashiti cream 115 g", "unit": "Can", "quantity": 235.0},
+        {"item": "Al-Ajawi extra meat 340 g", "unit": "Can", "quantity": 193.0},
+        {"item": "Indomie noodles (Supermi)", "unit": "Pack", "quantity": 192.0}
+      ],
+      "summary": {
+        "rows": 20,
+        "aggregated_rows": 20,
+        "unique_items": 20,
+        "unique_units": 6,
+        "total_quantity": 9807.73
+      }
+    };
+    const rawData = payload.data;
+
+    const unitSelect = document.getElementById('unitSelect');
+    const searchInput = document.getElementById('searchInput');
+    const topNInput = document.getElementById('topN');
+    const unitNote = document.getElementById('unitNote');
+    const tableBody = document.getElementById('tableBody');
+    const insightsEl = document.getElementById('insights');
+    const topList = document.getElementById('topList');
+
+    const numberFormat = new Intl.NumberFormat('en-US', { maximumFractionDigits: 3 });
+    const percentFormat = new Intl.NumberFormat('en-US', { maximumFractionDigits: 1 });
+
+    function buildUnitOptions() {
+      const units = Array.from(new Set(rawData.map(d => d.unit))).sort();
+      unitSelect.innerHTML = '';
+      const allOption = document.createElement('option');
+      allOption.value = 'ALL';
+      allOption.textContent = 'All units';
+      unitSelect.appendChild(allOption);
+      units.forEach(u => {
+        const opt = document.createElement('option');
+        opt.value = u;
+        opt.textContent = u;
+        unitSelect.appendChild(opt);
+      });
+    }
+
+    function getFiltered() {
+      const unit = unitSelect.value;
+      const query = (searchInput.value || '').trim();
+      return rawData.filter(d => {
+        const unitOk = unit === 'ALL' || d.unit === unit;
+        const searchOk = !query || d.item.toLowerCase().includes(query.toLowerCase());
+        return unitOk && searchOk;
+      });
+    }
+
+    function aggregateForChart(list) {
+      const unit = unitSelect.value;
+      if (unit === 'ALL') {
+        return list.map(d => ({
+          label: `${d.item} — ${d.unit}`,
+          quantity: d.quantity,
+          unit: d.unit,
+          item: d.item
+        }));
+      }
+      const map = new Map();
+      list.forEach(d => {
+        const key = d.item;
+        map.set(key, (map.get(key) || 0) + d.quantity);
+      });
+      return Array.from(map.entries()).map(([item, quantity]) => ({
+        label: item,
+        quantity: quantity,
+        unit: unit,
+        item: item
+      }));
+    }
+
+    function median(values) {
+      if (!values.length) return 0;
+      const arr = [...values].sort((a,b) => a - b);
+      const mid = Math.floor(arr.length / 2);
+      return arr.length % 2 !== 0 ? arr[mid] : (arr[mid - 1] + arr[mid]) / 2;
+    }
+
+    function animateNumber(el, target, formatter, suffix = '', duration = 900) {
+      if (prefersReduced) {
+        el.textContent = `${formatter(target)}${suffix}`;
+        return;
+      }
+      const start = performance.now();
+      const from = 0;
+      const diff = target - from;
+      function tick(now) {
+        const p = Math.min((now - start) / duration, 1);
+        const eased = 1 - Math.pow(1 - p, 3);
+        const value = from + diff * eased;
+        el.textContent = `${formatter(value)}${suffix}`;
+        if (p < 1) requestAnimationFrame(tick);
+      }
+      requestAnimationFrame(tick);
+    }
+
+    let topItemsChart;
+    let shareChart;
+    let paretoChart;
+
+    function buildSummaryMetrics(displayData, totalQty, topItem, top10Share, fullCount) {
+      const el = document.getElementById('summary');
+      el.innerHTML = '';
+      const metrics = [
+        { label: 'Items after filtering', value: fullCount, format: v => numberFormat.format(v) },
+        { label: 'Total quantity', value: totalQty, format: v => numberFormat.format(v) },
+        { label: 'Top item', value: topItem ? topItem.item : '—', format: null },
+        { label: 'Top 10 share', value: top10Share, format: v => percentFormat.format(v), suffix: '%' },
+        { label: 'Median quantity', value: median(displayData.map(d => d.quantity)), format: v => numberFormat.format(v) }
+      ];
+      metrics.forEach(m => {
+        const card = document.createElement('div');
+        card.className = 'metric';
+        const title = document.createElement('h3');
+        if (m.format) {
+          title.textContent = '0';
+        } else {
+          title.textContent = m.value;
+        }
+        const span = document.createElement('span');
+        span.textContent = m.label;
+        card.appendChild(title);
+        card.appendChild(span);
+        el.appendChild(card);
+        if (m.format) {
+          animateNumber(title, m.value, m.format, m.suffix || '');
+        }
+      });
+    }
+
+    function renderInsights(displayData, totalQty, fullCount) {
+      const top5 = displayData.slice(0, 5);
+      const top5Share = totalQty ? top5.reduce((s, d) => s + d.quantity, 0) / totalQty * 100 : 0;
+      const tailCount = Math.max(0, fullCount - 20);
+
+      insightsEl.innerHTML = `
+        <div>Top 5 items account for <strong>${percentFormat.format(top5Share)}%</strong> of the displayed quantity.</div>
+        <div>Number of items outside the top 20 is <strong>${numberFormat.format(tailCount)}</strong>.</div>
+        <div>Bars show how quickly demand concentrates on the most purchased items.</div>
+      `;
+    }
+
+    function renderTopList(displayData, totalQty) {
+      topList.innerHTML = '';
+      const top5 = displayData.slice(0, 5);
+      top5.forEach(row => {
+        const share = totalQty ? (row.quantity / totalQty) * 100 : 0;
+        const item = document.createElement('div');
+        item.className = 'list-item';
+        item.innerHTML = `
+          <div class="row"><span>${row.item}</span><span>${percentFormat.format(share)}%</span></div>
+          <div class="bar"><span></span></div>
+        `;
+        topList.appendChild(item);
+        const bar = item.querySelector('.bar span');
+        requestAnimationFrame(() => {
+          bar.style.width = `${Math.min(100, share)}%`;
+        });
+      });
+    }
+
+    function renderCharts() {
+      const filtered = getFiltered();
+      const fullAggregated = aggregateForChart(filtered).sort((a,b) => b.quantity - a.quantity);
+      const topN = Math.max(5, Math.min(100, parseInt(topNInput.value || '20', 10)));
+      const aggregated = fullAggregated.slice(0, topN);
+
+      const totalQty = aggregated.reduce((s, d) => s + d.quantity, 0);
+      const top10Share = aggregated.slice(0, 10).reduce((s, d) => s + d.quantity, 0) / (totalQty || 1) * 100;
+      const topItem = aggregated[0];
+
+      buildSummaryMetrics(aggregated, totalQty, topItem, top10Share, fullAggregated.length);
+      renderInsights(aggregated, totalQty, fullAggregated.length);
+      renderTopList(aggregated, totalQty);
+
+      const labels = aggregated.map(d => d.label);
+      const data = aggregated.map(d => d.quantity);
+      const baseAnimation = prefersReduced ? false : { duration: 900, easing: 'easeOutQuart' };
+
+      if (topItemsChart) topItemsChart.destroy();
+      topItemsChart = new Chart(document.getElementById('topItemsChart'), {
+        type: 'bar',
+        data: {
+          labels,
+          datasets: [{
+            label: 'Quantity',
+            data,
+            backgroundColor: '#157a75',
+            borderRadius: 8
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          indexAxis: 'y',
+          animation: baseAnimation,
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              callbacks: {
+                label: ctx => `Quantity: ${numberFormat.format(ctx.raw)}`
+              }
+            }
+          },
+          scales: {
+            x: {
+              grid: { color: 'rgba(0,0,0,0.08)' }
+            },
+            y: {
+              ticks: { autoSkip: false }
+            }
+          }
+        }
+      });
+
+      const shareTopK = 8;
+      const shareData = aggregated.slice(0, shareTopK);
+      const restQty = aggregated.slice(shareTopK).reduce((s, d) => s + d.quantity, 0);
+      const shareLabels = shareData.map(d => d.label).concat(restQty ? ['Other items'] : []);
+      const shareValues = shareData.map(d => d.quantity).concat(restQty ? [restQty] : []);
+
+      if (shareChart) shareChart.destroy();
+      shareChart = new Chart(document.getElementById('shareChart'), {
+        type: 'doughnut',
+        data: {
+          labels: shareLabels,
+          datasets: [{
+            data: shareValues,
+            backgroundColor: BRAND_COLORS
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          animation: baseAnimation,
+          plugins: {
+            legend: { position: 'bottom' }
+          }
+        }
+      });
+
+      if (paretoChart) paretoChart.destroy();
+      paretoChart = new Chart(document.getElementById('paretoChart'), {
+        type: 'bar',
+        data: {
+          labels,
+          datasets: [{
+            label: 'Quantity',
+            data,
+            backgroundColor: 'rgba(21, 122, 117, 0.22)',
+            borderRadius: 6
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          animation: baseAnimation,
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              callbacks: {
+                label: ctx => `Quantity: ${numberFormat.format(ctx.raw)}`
+              }
+            }
+          },
+          scales: {
+            y: {
+              grid: { color: 'rgba(0,0,0,0.08)' }
+            },
+            x: {
+              ticks: { maxRotation: 60, minRotation: 30 }
+            }
+          }
+        }
+      });
+
+      renderTable(aggregated, totalQty);
+      unitNote.textContent = unitSelect.value === 'ALL'
+        ? 'Note: when all units are selected, items are displayed with their unit to avoid mixing different measurement scales.'
+        : `Selected unit: ${unitSelect.value}`;
+    }
+
+    function renderTable(aggregated, totalQty) {
+      tableBody.innerHTML = '';
+      aggregated.forEach((row, idx) => {
+        const tr = document.createElement('tr');
+        const rankTd = document.createElement('td');
+        rankTd.textContent = idx + 1;
+        const itemTd = document.createElement('td');
+        itemTd.textContent = row.item;
+        const unitTd = document.createElement('td');
+        unitTd.innerHTML = `<span class="tag">${row.unit}</span>`;
+        const qtyTd = document.createElement('td');
+        qtyTd.textContent = numberFormat.format(row.quantity);
+        const shareTd = document.createElement('td');
+        const share = totalQty ? (row.quantity / totalQty) * 100 : 0;
+        shareTd.textContent = `${percentFormat.format(share)}%`;
+        tr.appendChild(rankTd);
+        tr.appendChild(itemTd);
+        tr.appendChild(unitTd);
+        tr.appendChild(qtyTd);
+        tr.appendChild(shareTd);
+        tableBody.appendChild(tr);
+      });
+    }
+
+    function revealCards() {
+      const cards = document.querySelectorAll('.card');
+      if (prefersReduced) {
+        cards.forEach(c => c.classList.add('is-visible'));
+        return;
+      }
+      const observer = new IntersectionObserver(entries => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('is-visible');
+            observer.unobserve(entry.target);
+          }
+        });
+      }, { threshold: 0.2 });
+      cards.forEach(c => observer.observe(c));
+    }
+
+    function hideLoader() {
+      const loader = document.getElementById('loader');
+      setTimeout(() => loader.classList.add('hidden'), 450);
+    }
+
+    buildUnitOptions();
+    renderCharts();
+    revealCards();
+    hideLoader();
+
+    [unitSelect, searchInput, topNInput].forEach(el => {
+      el.addEventListener('input', renderCharts);
+    });
+  </script>
+</body>
+</html>

@@ -6,8 +6,6 @@
   const program = config.programs[programKey];
   const mount = document.getElementById("programPage");
   const mainHref = window.location.pathname.endsWith("/index.html") ? "index.html" : "../index.html";
-  const isHostedBuild = window.location.protocol.startsWith("http");
-  const legacyAvailable = !isHostedBuild;
   if (!program || !mount) return;
 
   const metricsMarkup = program.metrics.map((item) => `
@@ -33,12 +31,9 @@
     </div>
   `).join("");
 
-  const legacyActionMarkup = legacyAvailable
-    ? `<a class="button" href="${program.legacyPath.replace("?embed=1", "")}" target="_blank" rel="noreferrer">${program.legacyLabel}</a>`
-    : `<span class="button button--ghost" aria-disabled="true">Legacy source available in local working files only</span>`;
+  const legacyActionMarkup = `<a class="button" href="${program.legacyPath.replace("?embed=1", "")}" target="_blank" rel="noreferrer">${program.legacyLabel}</a>`;
 
-  const legacySectionMarkup = legacyAvailable
-    ? `
+  const legacySectionMarkup = `
     <section class="section legacy-shell">
       <div class="legacy-header">
         <div>
@@ -51,16 +46,6 @@
         </div>
       </div>
       <iframe class="legacy-frame" title="${program.title} detailed dashboard" src="${program.legacyPath}" loading="lazy"></iframe>
-    </section>`
-    : `
-    <section class="section legacy-shell">
-      <div class="legacy-header">
-        <div>
-          <p class="eyebrow">Detailed Analytics</p>
-          <h3>Source dashboard not bundled in this published copy</h3>
-          <p>This GitHub Pages version includes the unified executive shell and summary analytics. The original detailed dashboard files live outside this repository, so they can only be viewed from the local project workspace.</p>
-        </div>
-      </div>
     </section>`;
 
   mount.innerHTML = `

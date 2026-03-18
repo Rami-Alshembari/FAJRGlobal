@@ -1,0 +1,1753 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FAJR Global | Hospital Impact Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;700&family=Manrope:wght@300;400;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <script src="../../shared-utils.js"></script>
+  <style>
+    :root {
+      --navy: #173347;
+      --teal: #157a75;
+      --coral: #b66a57;
+      --sand: #f6f4ef;
+      --gold: #b88746;
+      --gold-bright: #f4b860;
+      --ink: #1a2535;
+      --muted: #5c6f7b;
+      --white: #ffffff;
+      --shadow: 0 20px 48px rgba(23, 51, 71, 0.13);
+      --shadow-hover: 0 30px 64px rgba(23, 51, 71, 0.20);
+      --glass: rgba(255, 255, 255, 0.82);
+      --border: rgba(23, 51, 71, 0.08);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: "Manrope", system-ui, sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 15% 20%, rgba(11, 122, 117, 0.18), transparent 52%),
+        radial-gradient(circle at 85% 10%, rgba(244, 184, 96, 0.22), transparent 48%),
+        linear-gradient(180deg, #fbfaf7 0%, #eef2f6 100%);
+      background-attachment: fixed;
+      min-height: 100vh;
+      -webkit-text-size-adjust: 100%;
+    }
+
+    .page {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 32px 24px 60px;
+      position: relative;
+      z-index: 0;
+    }
+
+    .page::before,
+    .page::after {
+      content: "";
+      position: absolute;
+      width: 320px;
+      height: 320px;
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: -1;
+      opacity: 0.6;
+    }
+
+    .page::before {
+      top: -120px;
+      right: -120px;
+      background: radial-gradient(circle, rgba(11, 31, 58, 0.35), transparent 70%);
+      animation: drift 18s ease-in-out infinite;
+    }
+
+    .page::after {
+      bottom: -140px;
+      left: -120px;
+      background: radial-gradient(circle, rgba(11, 122, 117, 0.3), transparent 70%);
+      animation: drift 22s ease-in-out infinite;
+    }
+
+    header {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+      margin-bottom: 28px;
+      padding: 24px 26px;
+      background: var(--glass);
+      border-radius: 26px;
+      border: 1px solid rgba(11, 31, 58, 0.08);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(14px);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 18px;
+    }
+
+    .brand img {
+      width: 190px;
+      height: auto;
+      object-fit: contain;
+      padding: 8px;
+      border-radius: 22px;
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.96), rgba(240, 245, 250, 0.92));
+      box-shadow: 0 22px 36px rgba(11, 31, 58, 0.2);
+    }
+
+    .title-block h1 {
+      margin: 0;
+      font-family: "Fraunces", serif;
+      font-size: 2.4rem;
+      color: var(--navy);
+      line-height: 1.15;
+    }
+
+    .title-block h1 span {
+      display: block;
+      font-family: "Manrope", sans-serif;
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: var(--muted);
+      letter-spacing: 0.04em;
+      margin-top: 6px;
+    }
+
+    .title-block p {
+      margin: 6px 0 0;
+      color: var(--muted);
+      font-size: 0.98rem;
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .pill {
+      padding: 10px 16px;
+      border-radius: 999px;
+      background: linear-gradient(120deg, rgba(11, 31, 58, 0.08), rgba(11, 122, 117, 0.12));
+      color: var(--navy);
+      font-weight: 600;
+      font-size: 0.9rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .note {
+      padding: 12px 16px;
+      border-radius: 14px;
+      background: rgba(255, 255, 255, 0.9);
+      border: 1px solid rgba(11, 31, 58, 0.08);
+      color: var(--muted);
+      font-size: 0.9rem;
+      max-width: 320px;
+      animation: floatIn 0.8s ease-out;
+    }
+
+    .grid {
+      display: grid;
+      gap: 18px;
+    }
+
+    .section-title {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin: 10px 0 12px;
+      color: var(--navy);
+      font-weight: 700;
+      font-size: 1.05rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .stats {
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      margin-bottom: 18px;
+    }
+
+    .stats .card:nth-child(1) { animation-delay: 0.05s; }
+    .stats .card:nth-child(2) { animation-delay: 0.12s; }
+    .stats .card:nth-child(3) { animation-delay: 0.18s; }
+    .stats .card:nth-child(4) { animation-delay: 0.24s; }
+
+    .card {
+      background: var(--white);
+      border-radius: 20px;
+      padding: 20px 22px;
+      box-shadow: var(--shadow);
+      position: relative;
+      overflow: hidden;
+      border: 1px solid rgba(11, 31, 58, 0.08);
+      animation: fadeUp 0.6s ease-out;
+      transition: transform 0.25s ease, box-shadow 0.25s ease;
+    }
+
+    .card::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(120deg, rgba(15, 163, 177, 0.12), transparent 60%);
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    .card:hover::after {
+      opacity: 1;
+    }
+
+    .card::before {
+      content: "";
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, var(--teal), rgba(21, 122, 117, 0.3));
+      border-radius: 20px 20px 0 0;
+      opacity: 0;
+      transition: opacity 0.25s ease;
+    }
+
+    .card:hover::before {
+      opacity: 1;
+    }
+
+    .card:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--shadow-hover);
+    }
+
+    .stat-icon {
+      width: 46px;
+      height: 46px;
+      border-radius: 16px;
+      display: grid;
+      place-items: center;
+      color: var(--white);
+      font-size: 1.2rem;
+      margin-bottom: 12px;
+      box-shadow: 0 12px 18px rgba(11, 31, 58, 0.2);
+    }
+
+    .stat-label {
+      color: var(--muted);
+      font-size: 0.9rem;
+      margin-bottom: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .stat-number {
+      font-size: 2.1rem;
+      font-weight: 700;
+      color: var(--navy);
+      font-family: "Fraunces", serif;
+    }
+
+    .highlights {
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      margin-bottom: 28px;
+    }
+
+    .highlights .highlight-card:nth-child(1) { animation-delay: 0.1s; }
+    .highlights .highlight-card:nth-child(2) { animation-delay: 0.18s; }
+    .highlights .highlight-card:nth-child(3) { animation-delay: 0.26s; }
+
+    .insights {
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      margin-bottom: 26px;
+    }
+
+    .highlight-card {
+      background: rgba(255, 255, 255, 0.92);
+      border-radius: 20px;
+      padding: 18px 20px;
+      box-shadow: var(--shadow);
+      border: 1px solid rgba(11, 31, 58, 0.08);
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      animation: fadeUp 0.7s ease-out;
+      transition: transform 0.25s ease, box-shadow 0.25s ease;
+    }
+
+    .highlight-head {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .highlight-icon {
+      width: 34px;
+      height: 34px;
+      border-radius: 12px;
+      display: grid;
+      place-items: center;
+      background: rgba(11, 31, 58, 0.1);
+      color: var(--navy);
+    }
+
+    .highlight-card:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--shadow-hover);
+    }
+
+    .highlight-title {
+      font-size: 0.88rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .highlight-value {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--navy);
+    }
+
+    .highlight-sub {
+      font-size: 0.9rem;
+      color: var(--muted);
+    }
+
+    .sections {
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      margin-bottom: 26px;
+    }
+
+    .chart-card {
+      background: var(--white);
+      border-radius: 20px;
+      padding: 18px 18px 10px;
+      box-shadow: var(--shadow);
+      border: 1px solid rgba(11, 31, 58, 0.08);
+      animation: fadeUp 0.7s ease-out;
+      transition: transform 0.25s ease, box-shadow 0.25s ease;
+    }
+
+    .chart-card.donut {
+      align-items: center;
+    }
+
+    .donut-wrap {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 6px 0 12px;
+    }
+
+    .donut-wrap canvas {
+      width: 240px !important;
+      height: 240px !important;
+    }
+
+    .chart-card:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--shadow-hover);
+    }
+
+    .chart-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 10px;
+    }
+
+    .chart-header h3 {
+      margin: 0;
+      font-size: 1.05rem;
+      color: var(--navy);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .chart-header span {
+      font-size: 0.82rem;
+      color: var(--muted);
+    }
+
+    canvas {
+      width: 100% !important;
+      height: 260px !important;
+    }
+
+    .wide {
+      grid-column: 1 / -1;
+    }
+
+    .table-card {
+      background: var(--white);
+      border-radius: 20px;
+      padding: 20px;
+      box-shadow: var(--shadow);
+      border: 1px solid rgba(11, 31, 58, 0.08);
+      animation: fadeUp 0.8s ease-out;
+      transition: transform 0.25s ease, box-shadow 0.25s ease;
+      overflow-x: auto;
+    }
+
+    .table-card:hover {
+      transform: translateY(-3px);
+      box-shadow: var(--shadow-hover);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.92rem;
+      min-width: 720px;
+    }
+
+    th, td {
+      text-align: left;
+      padding: 12px 8px;
+      border-bottom: 1px solid #edf0f5;
+    }
+
+    thead {
+      position: sticky;
+      top: 0;
+      z-index: 5;
+      background: #fff;
+    }
+
+    th {
+      color: var(--muted);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      font-size: 0.78rem;
+      border-bottom: 2px solid rgba(21, 122, 117, 0.18);
+    }
+
+    tbody tr:hover {
+      background: rgba(21, 122, 117, 0.06);
+    }
+
+    tbody tr {
+      transition: background 0.2s ease;
+    }
+
+    tbody tr:nth-child(even) {
+      background: rgba(23, 51, 71, 0.025);
+    }
+
+    tbody tr:nth-child(even):hover {
+      background: rgba(21, 122, 117, 0.06);
+    }
+
+    .rank-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      font-size: 0.75rem;
+      font-weight: 700;
+      background: rgba(23, 51, 71, 0.08);
+      color: var(--navy);
+      margin-right: 6px;
+    }
+
+    tbody tr:first-child .rank-badge { background: rgba(184, 135, 70, 0.18); color: var(--gold); }
+    tbody tr:nth-child(2) .rank-badge { background: rgba(23, 51, 71, 0.12); color: var(--navy); }
+    tbody tr:nth-child(3) .rank-badge { background: rgba(182, 106, 87, 0.12); color: var(--coral); }
+
+    .dept-cell {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 600;
+      color: var(--navy);
+    }
+
+    .dept-icon {
+      width: 34px;
+      height: 34px;
+      border-radius: 12px;
+      display: grid;
+      place-items: center;
+      background: rgba(11, 122, 117, 0.12);
+      color: var(--teal);
+    }
+
+    .footer {
+      margin-top: 28px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: center;
+      justify-content: space-between;
+      color: var(--muted);
+      font-size: 0.85rem;
+    }
+
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: rgba(14, 62, 107, 0.08);
+      color: var(--navy);
+      font-size: 0.8rem;
+      font-weight: 600;
+    }
+
+    /* ── Operational Insights Section ──────────────────────── */
+    .op-insights {
+      background: linear-gradient(135deg, rgba(23, 51, 71, 0.04), rgba(21, 122, 117, 0.06));
+      border: 1px solid rgba(21, 122, 117, 0.15);
+      border-radius: 22px;
+      padding: 28px 30px;
+      margin-bottom: 26px;
+      animation: fadeUp 0.6s ease-out;
+    }
+
+    .op-insights-head {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .op-insights-head h3 {
+      margin: 0;
+      font-family: "Fraunces", serif;
+      font-size: 1.25rem;
+      color: var(--navy);
+      flex: 1;
+    }
+
+    .op-insights-head .eyebrow {
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--teal);
+      background: rgba(21, 122, 117, 0.1);
+      padding: 4px 10px;
+      border-radius: 999px;
+    }
+
+    .insights-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+    }
+
+    .insight-item {
+      background: var(--white);
+      border-radius: 14px;
+      padding: 16px 18px;
+      border: 1px solid var(--border);
+      border-left: 3px solid var(--teal);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .insight-item:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow);
+    }
+
+    .insight-item.navy { border-left-color: var(--navy); }
+    .insight-item.coral { border-left-color: var(--coral); }
+    .insight-item.gold { border-left-color: var(--gold); }
+
+    .insight-label {
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+      margin-bottom: 4px;
+    }
+
+    .insight-dept {
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--navy);
+      margin-bottom: 2px;
+    }
+
+    .insight-stat {
+      font-size: 0.88rem;
+      color: var(--muted);
+    }
+
+    .insight-bar-wrap {
+      margin-top: 10px;
+      background: rgba(23, 51, 71, 0.07);
+      border-radius: 999px;
+      height: 5px;
+      overflow: hidden;
+    }
+
+    .insight-bar-fill {
+      height: 100%;
+      border-radius: 999px;
+      background: var(--teal);
+      transition: width 1s cubic-bezier(0.4, 0, 0.2, 1) 0.3s;
+      width: 0;
+    }
+
+    .insight-item.navy .insight-bar-fill { background: var(--navy); }
+    .insight-item.coral .insight-bar-fill { background: var(--coral); }
+    .insight-item.gold .insight-bar-fill { background: var(--gold); }
+
+    /* ── Section Reveal ─────────────────────────────────────── */
+    .reveal-anim {
+      opacity: 0;
+      transform: translateY(16px);
+      transition: opacity 0.55s ease, transform 0.55s ease;
+    }
+
+    .reveal-anim.is-visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* ── Animations ─────────────────────────────────────────── */
+    @keyframes fadeUp {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes drift {
+      0%, 100% {
+        transform: translateY(0);
+      }
+      50% {
+        transform: translateY(12px);
+      }
+    }
+
+    @keyframes floatIn {
+      from {
+        opacity: 0;
+        transform: translateX(12px);
+      }
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+
+    @media (max-width: 900px) {
+      header {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .header-actions {
+        width: 100%;
+        justify-content: flex-start;
+      }
+    }
+
+    @media (max-width: 720px) {
+      header {
+        padding: 20px;
+      }
+
+      .brand {
+        width: 100%;
+      }
+
+      .brand {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .brand img {
+        width: 120px;
+      }
+
+      .title-block h1 {
+        font-size: 1.7rem;
+      }
+
+      .title-block h1 span {
+        font-size: 0.95rem;
+      }
+
+      .pill,
+      .note {
+        width: 100%;
+      }
+
+      .note {
+        max-width: 100%;
+      }
+
+      canvas {
+        height: 220px !important;
+      }
+    }
+
+    @media (max-width: 520px) {
+      .page {
+        padding: 24px 16px 48px;
+      }
+
+      .stats,
+      .highlights,
+      .insights,
+      .sections {
+        grid-template-columns: 1fr;
+      }
+
+      .title-block {
+        text-align: left;
+      }
+
+      .chart-card,
+      .table-card,
+      .highlight-card,
+      .card {
+        padding: 16px;
+      }
+
+      .stat-number {
+        font-size: 1.7rem;
+      }
+
+      canvas {
+        height: 200px !important;
+      }
+
+      table {
+        font-size: 0.82rem;
+        min-width: 620px;
+      }
+
+      .footer {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      * {
+        animation: none !important;
+        transition: none !important;
+      }
+    }
+  </style>
+  <link rel="stylesheet" href="../../shared-brand.css" />
+</head>
+<body>
+  <div class="fajr-brandbar">
+    <a class="fajr-brandbar__brand" href="../../index.html">
+      <img src="FAJR_Global_Logo_WO_Tagline_Navy.png" alt="FAJR Global logo" class="fajr-brandbar__logo">
+      <div>
+        <p class="fajr-brandbar__eyebrow">FAJR Global Gaza</p>
+        <p class="fajr-brandbar__title">Public Aid Hospital Dashboard</p>
+      </div>
+    </a>
+    <nav class="fajr-brandbar__nav" aria-label="Dashboard navigation">
+      <a href="../general-projects/index.html">General Projects</a>
+      <a href="dashboard.html" class="is-active">Public Aid Hospital</a>
+      <a href="../vouchers/fajr-dashboard-en.html">Vouchers</a>
+    </nav>
+  </div>
+  <div class="page">
+    <header>
+      <div class="brand">
+        <img id="logo" src="FAJR_Global_Logo_WO_Tagline_Navy.png" alt="FAJR Global" />
+        <div class="title-block">
+          <h1>
+            FAJR Global
+            <span>Public Aid Hospital Project Statistics</span>
+          </h1>
+          <p id="reportPeriod">Loading report period...</p>
+        </div>
+      </div>
+      <div class="header-actions">
+        <div class="pill"><i class="fa-solid fa-heart-pulse"></i> Surgical Care Program</div>
+        <div class="note" id="statusNote">Reading data from Excel file...</div>
+      </div>
+    </header>
+
+    <section class="grid stats" id="stats">
+      <div class="card">
+        <div class="stat-icon" style="background: var(--navy);"><i class="fa-solid fa-scalpel"></i></div>
+        <div class="stat-label">Total Surgeries</div>
+        <div class="stat-number" data-count="0" id="totalSurgeries">0</div>
+      </div>
+      <div class="card">
+        <div class="stat-icon" style="background: var(--teal);"><i class="fa-solid fa-stethoscope"></i></div>
+        <div class="stat-label">Clinic Visits</div>
+        <div class="stat-number" data-count="0" id="totalClinics">0</div>
+      </div>
+      <div class="card">
+        <div class="stat-icon" style="background: var(--coral);"><i class="fa-solid fa-bed-pulse"></i></div>
+        <div class="stat-label">Ward Admissions</div>
+        <div class="stat-number" data-count="0" id="totalAdmissions">0</div>
+      </div>
+      <div class="card">
+        <div class="stat-icon" style="background: var(--gold);"><i class="fa-solid fa-people-group"></i></div>
+        <div class="stat-label">Departments Covered</div>
+        <div class="stat-number" data-count="0" id="totalDepartments">0</div>
+      </div>
+    </section>
+
+    <section class="grid highlights">
+      <div class="highlight-card">
+        <div class="highlight-head">
+          <span class="highlight-icon"><i class="fa-solid fa-scalpel" id="topSurgeryIcon"></i></span>
+          <div class="highlight-title">Top Surgery Department</div>
+        </div>
+        <div class="highlight-value" id="topSurgeryDept">—</div>
+        <div class="highlight-sub" id="topSurgeryValue">— total surgeries</div>
+      </div>
+      <div class="highlight-card">
+        <div class="highlight-head">
+          <span class="highlight-icon"><i class="fa-solid fa-stethoscope" id="topClinicIcon"></i></span>
+          <div class="highlight-title">Top Clinic Demand</div>
+        </div>
+        <div class="highlight-value" id="topClinicDept">—</div>
+        <div class="highlight-sub" id="topClinicValue">— total clinic visits</div>
+      </div>
+      <div class="highlight-card">
+        <div class="highlight-head">
+          <span class="highlight-icon"><i class="fa-solid fa-bed-pulse" id="topAdmissionIcon"></i></span>
+          <div class="highlight-title">Top Admissions</div>
+        </div>
+        <div class="highlight-value" id="topAdmissionDept">—</div>
+        <div class="highlight-sub" id="topAdmissionValue">— total ward admissions</div>
+      </div>
+    </section>
+
+    <div class="section-title"><i class="fa-solid fa-lightbulb"></i> Operational Highlights</div>
+    <div class="op-insights" id="opInsights">
+      <div class="op-insights-head">
+        <h3>Department Intelligence</h3>
+        <span class="eyebrow">Key Findings</span>
+      </div>
+      <div class="insights-grid" id="insightsGrid">
+        <!-- rendered by JS -->
+      </div>
+    </div>
+
+    <div class="section-title"><i class="fa-solid fa-wave-square"></i> Care Insights</div>
+    <section class="grid insights">
+      <div class="chart-card donut">
+        <div class="chart-header">
+          <h3><i class="fa-solid fa-chart-pie"></i> Service Mix</h3>
+          <span>Share of total patient activity</span>
+        </div>
+        <div class="donut-wrap">
+          <canvas id="mixChart"></canvas>
+        </div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-header">
+          <h3><i class="fa-solid fa-chart-line"></i> Weekly Momentum</h3>
+          <span>Combined care volume trend</span>
+        </div>
+        <canvas id="trendChart"></canvas>
+      </div>
+    </section>
+
+    <div class="section-title"><i class="fa-solid fa-chart-simple"></i> Department Performance</div>
+    <section class="grid sections">
+      <div class="chart-card wide">
+        <div class="chart-header">
+          <h3><i class="fa-solid fa-chart-column"></i> Weekly Care Volume</h3>
+          <span>Surgeries, clinic visits, and ward admissions by week</span>
+        </div>
+        <canvas id="weeklyChart"></canvas>
+      </div>
+      <div class="chart-card">
+        <div class="chart-header">
+          <h3><i class="fa-solid fa-kit-medical"></i> Surgeries by Department</h3>
+          <span>Total for the reporting month</span>
+        </div>
+        <canvas id="surgeryChart"></canvas>
+      </div>
+      <div class="chart-card">
+        <div class="chart-header">
+          <h3><i class="fa-solid fa-notes-medical"></i> Clinic Visits by Department</h3>
+          <span>Total for the reporting month</span>
+        </div>
+        <canvas id="clinicChart"></canvas>
+      </div>
+      <div class="chart-card">
+        <div class="chart-header">
+          <h3><i class="fa-solid fa-hospital-user"></i> Admissions by Department</h3>
+          <span>Total for the reporting month</span>
+        </div>
+        <canvas id="admissionChart"></canvas>
+      </div>
+    </section>
+
+    <section class="table-card">
+      <div class="chart-header">
+        <h3><i class="fa-solid fa-list-check"></i> Department Summary</h3>
+        <span>Total for the reporting month</span>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>Department</th>
+            <th>Total Surgeries</th>
+            <th>Total Clinic Visits</th>
+            <th>Total Ward Admissions</th>
+            <th>Total Patients</th>
+          </tr>
+        </thead>
+        <tbody id="deptTable"></tbody>
+      </table>
+    </section>
+
+    <div class="footer">
+      <span id="dataSource">Data source: Hospital Updated Report - FAJR Global.xlsx</span>
+      <span id="shareLink">Share link: —</span>
+      <span class="tag"><i class="fa-solid fa-shield-heart"></i> Impact Monitoring</span>
+    </div>
+  </div>
+
+  <script>
+    const CONFIG = {
+      workbookFile: "Hospital Updated Report - FAJR Global_2.xlsx",
+      logoFile: "FAJR_Global_Logo_WO_Tagline_Navy.png",
+    };
+
+    const FALLBACK_REPORT_DATA = {
+      totalGroup: "Total (All Months)",
+      weekGroups: [
+        "1st Week 19-26 Feb",
+        "2nd Week 28 Feb - 5 March",
+        "3rd Week 7-12 Feb",
+        "4th Week 14 - 18 Feb",
+        "1st Week 20-29 Jan",
+        "2nd Week 31 Jan - 5 Feb",
+        "3rd Week 7-12 Feb (Second Month)",
+        "4th Week 14 - 18 Feb (Second Month)",
+      ],
+      totalRow: {
+        "1st Week 20-29 Jan - Surgeries": 108,
+        "1st Week 20-29 Jan - Clinic Visits": 295,
+        "1st Week 20-29 Jan - Ward Admission": 9,
+        "2nd Week 31 Jan - 5 Feb - Surgeries": 167,
+        "2nd Week 31 Jan - 5 Feb - Clinic Visits": 485,
+        "2nd Week 31 Jan - 5 Feb - Ward Admission": 12,
+        "3rd Week 7-12 Feb - Surgeries": 205,
+        "3rd Week 7-12 Feb - Clinic Visits": 745,
+        "3rd Week 7-12 Feb - Ward Admission": 15,
+        "4th Week 14 - 18 Feb - Surgeries": 137,
+        "4th Week 14 - 18 Feb - Clinic Visits": 547,
+        "4th Week 14 - 18 Feb - Ward Admission": 23,
+        "1st Week 19-26 Feb - Surgeries": 167,
+        "1st Week 19-26 Feb - Clinic Visits": 759,
+        "1st Week 19-26 Feb - Ward Admission": 20,
+        "2nd Week 28 Feb - 5 March - Surgeries": 151,
+        "2nd Week 28 Feb - 5 March - Clinic Visits": 524,
+        "2nd Week 28 Feb - 5 March - Ward Admission": 11,
+        "3rd Week 7-12 Feb (Second Month) - Surgeries": 162,
+        "3rd Week 7-12 Feb (Second Month) - Clinic Visits": 579,
+        "3rd Week 7-12 Feb (Second Month) - Ward Admission": 16,
+        "4th Week 14 - 18 Feb (Second Month) - Surgeries": 0,
+        "4th Week 14 - 18 Feb (Second Month) - Clinic Visits": 0,
+        "4th Week 14 - 18 Feb (Second Month) - Ward Admission": 0,
+        "Total (All Months) - Surgeries": 1097,
+        "Total (All Months) - Clinic Visits": 3934,
+        "Total (All Months) - Ward Admission": 106,
+      },
+      departmentRows: [
+        { Item: "ENT", "Total (All Months) - Surgeries": 155, "Total (All Months) - Clinic Visits": 764, "Total (All Months) - Ward Admission": 0 },
+        { Item: "Maxillofacial", "Total (All Months) - Surgeries": 57, "Total (All Months) - Clinic Visits": 95, "Total (All Months) - Ward Admission": 10 },
+        { Item: "Gastroenterology & Endoscopy", "Total (All Months) - Surgeries": 127, "Total (All Months) - Clinic Visits": 213, "Total (All Months) - Ward Admission": 0 },
+        { Item: "Orthopedic", "Total (All Months) - Surgeries": 47, "Total (All Months) - Clinic Visits": 315, "Total (All Months) - Ward Admission": 3 },
+        { Item: "Ophthalmology", "Total (All Months) - Surgeries": 57, "Total (All Months) - Clinic Visits": 562, "Total (All Months) - Ward Admission": 0 },
+        { Item: "Pediatric Surgery", "Total (All Months) - Surgeries": 168, "Total (All Months) - Clinic Visits": 312, "Total (All Months) - Ward Admission": 34 },
+        { Item: "Neurosurgery", "Total (All Months) - Surgeries": 21, "Total (All Months) - Clinic Visits": 187, "Total (All Months) - Ward Admission": 12 },
+        { Item: "Plastic", "Total (All Months) - Surgeries": 53, "Total (All Months) - Clinic Visits": 93, "Total (All Months) - Ward Admission": 10 },
+        { Item: "General Surgery", "Total (All Months) - Surgeries": 182, "Total (All Months) - Clinic Visits": 365, "Total (All Months) - Ward Admission": 20 },
+        { Item: "Urology", "Total (All Months) - Surgeries": 95, "Total (All Months) - Clinic Visits": 373, "Total (All Months) - Ward Admission": 17 },
+        { Item: "Interventional Radiology & Biobsy", "Total (All Months) - Surgeries": 120, "Total (All Months) - Clinic Visits": 434, "Total (All Months) - Ward Admission": 0 },
+        { Item: "Vascular", "Total (All Months) - Surgeries": 15, "Total (All Months) - Clinic Visits": 61, "Total (All Months) - Ward Admission": 0 },
+        { Item: "Dermatology", "Total (All Months) - Surgeries": 0, "Total (All Months) - Clinic Visits": 160, "Total (All Months) - Ward Admission": 0 },
+      ],
+    };
+
+    const elements = {
+      reportPeriod: document.getElementById("reportPeriod"),
+      statusNote: document.getElementById("statusNote"),
+      totalSurgeries: document.getElementById("totalSurgeries"),
+      totalClinics: document.getElementById("totalClinics"),
+      totalAdmissions: document.getElementById("totalAdmissions"),
+      totalDepartments: document.getElementById("totalDepartments"),
+      deptTable: document.getElementById("deptTable"),
+      topSurgeryDept: document.getElementById("topSurgeryDept"),
+      topSurgeryValue: document.getElementById("topSurgeryValue"),
+      topSurgeryIcon: document.getElementById("topSurgeryIcon"),
+      topClinicDept: document.getElementById("topClinicDept"),
+      topClinicValue: document.getElementById("topClinicValue"),
+      topClinicIcon: document.getElementById("topClinicIcon"),
+      topAdmissionDept: document.getElementById("topAdmissionDept"),
+      topAdmissionValue: document.getElementById("topAdmissionValue"),
+      topAdmissionIcon: document.getElementById("topAdmissionIcon"),
+      shareLink: document.getElementById("shareLink"),
+      logo: document.getElementById("logo"),
+    };
+
+    elements.logo.src = CONFIG.logoFile;
+
+    // Apply shared chart defaults if available
+    if (window.FAJR) FAJR.applyChartDefaults();
+
+    const BRAND = {
+      navy:  "rgba(23, 51, 71, 0.88)",
+      teal:  "rgba(21, 122, 117, 0.85)",
+      coral: "rgba(182, 106, 87, 0.85)",
+      gold:  "rgba(184, 135, 70, 0.85)",
+    };
+
+    const num = (value) => {
+      const parsed = parseFloat(value);
+      return Number.isFinite(parsed) ? parsed : 0;
+    };
+
+    const ensureChartLibrary = () => {
+      if (!window.Chart) {
+        elements.statusNote.textContent =
+          "Chart library failed to load. Check your internet connection and refresh the page.";
+        elements.reportPeriod.textContent = "Reporting period unavailable";
+        return false;
+      }
+      return true;
+    };
+
+    const getDeptIcon = (name) => {
+      if (!name) return "fa-hospital";
+      const text = String(name).toLowerCase().trim();
+      const overrides = {
+        "interventional radiology & biobsy": "fa-x-ray",
+        "interventional radiology & biopsy": "fa-x-ray",
+        "gastroenterology & endoscopy": "fa-stomach",
+        "general surgery": "fa-scalpel",
+        "plastic": "fa-face-smile",
+        "vascular": "fa-heart-pulse",
+      };
+      if (overrides[text]) return overrides[text];
+      if (text.includes("ent")) return "fa-ear-listen";
+      if (text.includes("maxill")) return "fa-tooth";
+      if (text.includes("gastro") || text.includes("endoscopy")) return "fa-stomach";
+      if (text.includes("ortho")) return "fa-bone";
+      if (text.includes("ophthal") || text.includes("eye")) return "fa-eye";
+      if (text.includes("cardio")) return "fa-heart-pulse";
+      if (text.includes("neuro") || text.includes("brain")) return "fa-brain";
+      if (text.includes("pediatric") || text.includes("child")) return "fa-baby";
+      if (text.includes("urology")) return "fa-droplet";
+      if (text.includes("vascular")) return "fa-heart-pulse";
+      if (text.includes("dermat")) return "fa-hand-sparkles";
+      if (text.includes("plastic")) return "fa-face-smile";
+      if (text.includes("radiology") || text.includes("biopsy") || text.includes("biobsy")) return "fa-x-ray";
+      if (text.includes("ob") || text.includes("gyn") || text.includes("maternity")) return "fa-person-pregnant";
+      if (text.includes("general") || text.includes("surgery")) return "fa-scalpel";
+      return "fa-hospital";
+    };
+
+    const normalizeWeekKey = (label) => {
+      if (!label) return null;
+      const text = String(label).toLowerCase();
+      if (text.includes("1st")) return "W1";
+      if (text.includes("2nd")) return "W2";
+      if (text.includes("3rd")) return "W3";
+      if (text.includes("4th")) return "W4";
+      return null;
+    };
+
+    const findHeaderRow = (rows) => {
+      return rows.findIndex((row) =>
+        row && row.some((cell) => String(cell).trim().toLowerCase() === "item")
+      );
+    };
+
+    const isSubheaderRow = (row) => {
+      if (!row) return false;
+      const text = row
+        .map((cell) => (cell === null || cell === undefined ? "" : String(cell).toLowerCase()))
+        .join(" ");
+      const hasKeywords =
+        text.includes("surgeries") || text.includes("clinic") || text.includes("ward");
+      const firstCellsBlank =
+        (row[0] === null || row[0] === undefined || String(row[0]).trim() === "") &&
+        (row[1] === null || row[1] === undefined || String(row[1]).trim() === "");
+      return hasKeywords && firstCellsBlank;
+    };
+
+    const parseSummarySheet = (workbook, summarySheetName) => {
+      const sheet = summarySheetName ? workbook.Sheets[summarySheetName] : null;
+      if (!sheet) return null;
+      const rows = XLSX.utils.sheet_to_json(sheet, { header: 1, raw: true });
+      const headerRow = findHeaderRow(rows);
+      if (headerRow === -1) return null;
+      const header1 = rows[headerRow] || [];
+      const header2 = rows[headerRow + 1] || [];
+      const columns = [];
+      let currentGroup = "";
+      const maxLen = Math.max(header1.length, header2.length);
+
+      for (let i = 0; i < maxLen; i += 1) {
+        const h1 = header1[i];
+        const h2 = header2[i];
+        const h1Text = h1 === null || h1 === undefined ? "" : String(h1).trim();
+        const h2Text = h2 === null || h2 === undefined ? "" : String(h2).trim();
+
+        if (h1Text && h1Text !== "#" && h1Text.toLowerCase() !== "item") {
+          currentGroup = h1Text;
+        }
+
+        if (h1Text === "#") {
+          columns[i] = { key: "#", type: "id" };
+          continue;
+        }
+        if (h1Text.toLowerCase() === "item") {
+          columns[i] = { key: "Item", type: "item" };
+          continue;
+        }
+
+        if (h2Text && currentGroup) {
+          columns[i] = {
+            key: `${currentGroup} - ${h2Text}`,
+            type: "metric",
+            group: currentGroup,
+            metric: h2Text,
+          };
+        }
+      }
+
+      const dataStart = headerRow + 2;
+      const objects = rows.slice(dataStart)
+        .filter((row) => row && row[columns.findIndex((c) => c && c.type === "item")] !== undefined)
+        .map((row) => {
+          const obj = {};
+          columns.forEach((col, idx) => {
+            if (col && col.key) obj[col.key] = row[idx];
+          });
+          return obj;
+        })
+        .filter((obj) => obj.Item && String(obj.Item).trim() !== "");
+
+      const groups = columns
+        .filter((col) => col && col.type === "metric" && col.group)
+        .map((col) => col.group);
+      const orderedGroups = [...new Set(groups)];
+
+      const totalGroup = orderedGroups.find((group) => /total/i.test(group)) || "";
+      const weekGroups = orderedGroups.filter((group) => !/total/i.test(group));
+
+      const totalRow = objects.find(
+        (row) => String(row.Item || "").trim().toLowerCase() === "total"
+      );
+      const departmentRows = objects.filter(
+        (row) => String(row.Item || "").trim().toLowerCase() !== "total"
+      );
+
+      const periodCell = (rows[1] && rows[1][0]) || (rows[0] && rows[0][0]) || summarySheetName;
+
+      return {
+        objects,
+        departmentRows,
+        totalRow,
+        groups: orderedGroups,
+        weekGroups,
+        totalGroup,
+        sheetName: summarySheetName,
+        rows,
+        periodCell: String(periodCell),
+      };
+    };
+
+    const parseUpdatedReport = (workbook) => {
+      const summarySheetNames = ["First Month", "Updated Report", "Second Month"]
+        .filter((name, index, list) => workbook.Sheets[name] && list.indexOf(name) === index);
+
+      const parsedSheets = summarySheetNames
+        .map((name) => parseSummarySheet(workbook, name))
+        .filter(Boolean);
+
+      if (!parsedSheets.length) return null;
+      if (parsedSheets.length === 1) return parsedSheets[0];
+
+      const metricKeys = ["Surgeries", "Clinic Visits", "Ward Admission"];
+      const seenLabels = new Set();
+      const combined = {
+        departmentRows: [],
+        totalRow: {},
+        weekGroups: [],
+        totalGroup: "Total (All Months)",
+        sheetName: parsedSheets.map((sheet) => sheet.sheetName).join(" + "),
+        periodCell: `Updated Report ${parsedSheets.map((sheet) => sheet.periodCell.replace(/^Updated Report\s*/i, "").trim()).join(" + ")}`,
+      };
+
+      const departmentMap = new Map();
+
+      parsedSheets.forEach((sheet, sheetIndex) => {
+        const suffix = parsedSheets.length > 1 && sheetIndex > 0 ? ` (${sheet.sheetName})` : "";
+
+        sheet.weekGroups.forEach((group) => {
+          let label = group;
+          if (seenLabels.has(label)) {
+            label = `${group}${suffix}`;
+          }
+          seenLabels.add(label);
+          combined.weekGroups.push(label);
+          metricKeys.forEach((metric) => {
+            combined.totalRow[`${label} - ${metric}`] = num(
+              sheet.totalRow?.[`${group} - ${metric}`]
+            );
+          });
+        });
+
+        metricKeys.forEach((metric) => {
+          const current = num(combined.totalRow[`${combined.totalGroup} - ${metric}`]);
+          combined.totalRow[`${combined.totalGroup} - ${metric}`] =
+            current + num(sheet.totalRow?.[`${sheet.totalGroup} - ${metric}`]);
+        });
+
+        sheet.departmentRows.forEach((row) => {
+          const name = String(row.Item).trim();
+          if (!departmentMap.has(name)) {
+            departmentMap.set(name, { Item: name });
+          }
+          const entry = departmentMap.get(name);
+          metricKeys.forEach((metric) => {
+            const current = num(entry[`${combined.totalGroup} - ${metric}`]);
+            entry[`${combined.totalGroup} - ${metric}`] =
+              current + num(row[`${sheet.totalGroup} - ${metric}`]);
+          });
+        });
+      });
+
+      combined.departmentRows = Array.from(departmentMap.values());
+      combined.objects = [...combined.departmentRows, { Item: "Total", ...combined.totalRow }];
+
+      return combined;
+    };
+
+    const animateCount = (element, target) => {
+      const duration = 900;
+      const start = performance.now();
+      const from = 0;
+      const step = (now) => {
+        const progress = Math.min((now - start) / duration, 1);
+        const value = Math.round(from + (target - from) * progress);
+        element.textContent = value.toLocaleString();
+        if (progress < 1) requestAnimationFrame(step);
+      };
+      requestAnimationFrame(step);
+    };
+
+    let charts = [];
+
+    const resetCharts = () => {
+      charts.forEach((chart) => chart.destroy());
+      charts = [];
+    };
+
+    const createBarChart = (ctx, label, labels, data, color) => {
+      const chart = new Chart(ctx, {
+        type: "bar",
+        data: {
+          labels,
+          datasets: [
+            {
+              label,
+              data,
+              backgroundColor: color,
+              borderRadius: 10,
+              barThickness: 20,
+            },
+          ],
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          animation: { duration: 1200, easing: "easeOutQuart" },
+          plugins: {
+            legend: { display: false },
+      tooltip: { callbacks: { label: (ctx) => ` ${ctx.raw.toLocaleString()}` } },
+          },
+          scales: {
+            x: {
+              ticks: { color: "#5b677a" },
+              grid: { display: false },
+            },
+            y: {
+              ticks: { color: "#5b677a" },
+              grid: { color: "rgba(13,42,75,0.08)" },
+            },
+          },
+        },
+      });
+      charts.push(chart);
+    };
+
+    const createWeeklyChart = (ctx, labels, dataSets) => {
+      const chart = new Chart(ctx, {
+        type: "bar",
+        data: {
+          labels,
+          datasets: dataSets,
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          animation: { duration: 1200, easing: "easeOutQuart" },
+          plugins: {
+            legend: {
+              position: "top",
+              labels: { color: "#0d2a4b", usePointStyle: true },
+            },
+          },
+          scales: {
+            x: { stacked: true, ticks: { color: "#5b677a" }, grid: { display: false } },
+            y: {
+              stacked: true,
+              ticks: { color: "#5b677a" },
+              grid: { color: "rgba(13,42,75,0.08)" },
+            },
+          },
+        },
+      });
+      charts.push(chart);
+    };
+
+    const createDonutChart = (ctx, labels, data) => {
+      const chart = new Chart(ctx, {
+        type: "doughnut",
+        data: {
+          labels,
+          datasets: [
+            {
+              data,
+              backgroundColor: [
+                BRAND.navy,
+                BRAND.teal,
+                BRAND.coral,
+              ],
+              borderWidth: 0,
+            },
+          ],
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: true,
+          aspectRatio: 1,
+          animation: { duration: 1400, easing: "easeOutQuart" },
+          plugins: {
+            legend: {
+              position: "bottom",
+              labels: { color: "#0b1f3a", usePointStyle: true },
+            },
+          },
+          cutout: "68%",
+        },
+      });
+      charts.push(chart);
+    };
+
+    const createLineChart = (ctx, labels, data) => {
+      const chart = new Chart(ctx, {
+        type: "line",
+        data: {
+          labels,
+          datasets: [
+            {
+              label: "Total Care",
+              data,
+              borderColor: BRAND.navy,
+              backgroundColor: "rgba(23, 51, 71, 0.12)",
+              tension: 0.35,
+              fill: true,
+              pointRadius: 4,
+              pointBackgroundColor: BRAND.navy,
+            },
+          ],
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          animation: { duration: 1400, easing: "easeOutQuart" },
+          plugins: { legend: { display: false } },
+          scales: {
+            x: { ticks: { color: "#5a6472" }, grid: { display: false } },
+            y: { ticks: { color: "#5a6472" }, grid: { color: "rgba(11,31,58,0.08)" } },
+          },
+        },
+      });
+      charts.push(chart);
+    };
+
+    const renderDashboard = (report, reportPeriod, sourceLabel) => {
+      resetCharts();
+      const metricKeys = {
+        surgeries: "Surgeries",
+        clinics: "Clinic Visits",
+        admissions: "Ward Admission",
+      };
+
+      const sumMetricForGroup = (group, metric) =>
+        report.departmentRows.reduce((sum, row) => sum + num(row[`${group} - ${metric}`]), 0);
+
+      const getMetricFromTotalRow = (group, metric) => {
+        if (report.totalRow && report.totalRow[`${group} - ${metric}`] !== undefined) {
+          return num(report.totalRow[`${group} - ${metric}`]);
+        }
+        return null;
+      };
+
+      const totalGroup = report.totalGroup;
+      const weekGroups = report.weekGroups;
+
+      const totalSurgeries =
+        totalGroup && getMetricFromTotalRow(totalGroup, metricKeys.surgeries) !== null
+          ? getMetricFromTotalRow(totalGroup, metricKeys.surgeries)
+          : totalGroup
+          ? sumMetricForGroup(totalGroup, metricKeys.surgeries)
+          : 0;
+      const totalClinics =
+        totalGroup && getMetricFromTotalRow(totalGroup, metricKeys.clinics) !== null
+          ? getMetricFromTotalRow(totalGroup, metricKeys.clinics)
+          : totalGroup
+          ? sumMetricForGroup(totalGroup, metricKeys.clinics)
+          : 0;
+      const totalAdmissions =
+        totalGroup && getMetricFromTotalRow(totalGroup, metricKeys.admissions) !== null
+          ? getMetricFromTotalRow(totalGroup, metricKeys.admissions)
+          : totalGroup
+          ? sumMetricForGroup(totalGroup, metricKeys.admissions)
+          : 0;
+
+      animateCount(elements.totalSurgeries, totalSurgeries);
+      animateCount(elements.totalClinics, totalClinics);
+      animateCount(elements.totalAdmissions, totalAdmissions);
+
+      const departments = report.departmentRows.map((row) => {
+        const surgeries = num(row[`${totalGroup} - ${metricKeys.surgeries}`]);
+        const clinics = num(row[`${totalGroup} - ${metricKeys.clinics}`]);
+        const admissions = num(row[`${totalGroup} - ${metricKeys.admissions}`]);
+        return {
+          name: row.Item,
+          surgeries,
+          clinics,
+          admissions,
+          total: surgeries + clinics + admissions,
+        };
+      });
+
+      departments.sort((a, b) => b.total - a.total);
+      animateCount(elements.totalDepartments, departments.length);
+
+      elements.deptTable.innerHTML = departments
+        .map(
+          (dept, idx) => `
+            <tr>
+              <td>
+                <span class="dept-cell">
+                  <span class="rank-badge">${idx + 1}</span>
+                  <span class="dept-icon">
+                    <i class="fa-solid ${getDeptIcon(dept.name)}"></i>
+                  </span>
+                  ${dept.name}
+                </span>
+              </td>
+              <td>${dept.surgeries.toLocaleString()}</td>
+              <td>${dept.clinics.toLocaleString()}</td>
+              <td>${dept.admissions.toLocaleString()}</td>
+              <td><strong>${dept.total.toLocaleString()}</strong></td>
+            </tr>
+          `
+        )
+        .join("");
+
+      const weekTotals = weekGroups.map((group) => ({
+        group,
+        surgeries:
+          getMetricFromTotalRow(group, metricKeys.surgeries) ?? sumMetricForGroup(group, metricKeys.surgeries),
+        clinics:
+          getMetricFromTotalRow(group, metricKeys.clinics) ?? sumMetricForGroup(group, metricKeys.clinics),
+        admissions:
+          getMetricFromTotalRow(group, metricKeys.admissions) ?? sumMetricForGroup(group, metricKeys.admissions),
+      }));
+
+      const labels = weekGroups.map((group, idx) => group || `Week ${idx + 1}`);
+      createWeeklyChart(document.getElementById("weeklyChart"), labels, [
+        {
+          label: "Surgeries",
+          data: weekTotals.map((week) => week.surgeries),
+          backgroundColor: BRAND.navy,
+          borderRadius: 8,
+        },
+        {
+          label: "Clinic Visits",
+          data: weekTotals.map((week) => week.clinics),
+          backgroundColor: BRAND.teal,
+          borderRadius: 8,
+        },
+        {
+          label: "Ward Admissions",
+          data: weekTotals.map((week) => week.admissions),
+          backgroundColor: BRAND.coral,
+          borderRadius: 8,
+        },
+      ]);
+
+      const topDepartments = (key) =>
+        [...departments]
+          .sort((a, b) => b[key] - a[key])
+          .slice(0, 8);
+
+      const topSurgeries = topDepartments("surgeries");
+      const topClinics = topDepartments("clinics");
+      const topAdmissions = topDepartments("admissions");
+
+      const topSurgery = topSurgeries[0] || { name: "—", surgeries: 0 };
+      const topClinic = topClinics[0] || { name: "—", clinics: 0 };
+      const topAdmission = topAdmissions[0] || { name: "—", admissions: 0 };
+
+      elements.topSurgeryDept.textContent = topSurgery.name;
+      elements.topSurgeryValue.textContent = `${topSurgery.surgeries.toLocaleString()} total surgeries`;
+      elements.topSurgeryIcon.className = `fa-solid ${getDeptIcon(topSurgery.name)}`;
+      elements.topClinicDept.textContent = topClinic.name;
+      elements.topClinicValue.textContent = `${topClinic.clinics.toLocaleString()} total clinic visits`;
+      elements.topClinicIcon.className = `fa-solid ${getDeptIcon(topClinic.name)}`;
+      elements.topAdmissionDept.textContent = topAdmission.name;
+      elements.topAdmissionValue.textContent = `${topAdmission.admissions.toLocaleString()} total ward admissions`;
+      elements.topAdmissionIcon.className = `fa-solid ${getDeptIcon(topAdmission.name)}`;
+
+      createBarChart(
+        document.getElementById("surgeryChart"),
+        "Total Surgeries",
+        topSurgeries.map((d) => d.name),
+        topSurgeries.map((d) => d.surgeries),
+        BRAND.navy
+      );
+
+      createBarChart(
+        document.getElementById("clinicChart"),
+        "Total Clinic Visits",
+        topClinics.map((d) => d.name),
+        topClinics.map((d) => d.clinics),
+        BRAND.teal
+      );
+
+      createBarChart(
+        document.getElementById("admissionChart"),
+        "Total Ward Admissions",
+        topAdmissions.map((d) => d.name),
+        topAdmissions.map((d) => d.admissions),
+        BRAND.coral
+      );
+
+      createDonutChart(
+        document.getElementById("mixChart"),
+        ["Surgeries", "Clinic Visits", "Ward Admissions"],
+        [totalSurgeries, totalClinics, totalAdmissions]
+      );
+
+      const combinedWeekly = weekTotals.map(
+        (week) => week.surgeries + week.clinics + week.admissions
+      );
+      createLineChart(document.getElementById("trendChart"), labels, combinedWeekly);
+      
+      // Render operational insights
+      renderInsightsGrid(departments, totalSurgeries, totalClinics, totalAdmissions);
+
+      elements.reportPeriod.textContent = reportPeriod;
+      document.getElementById("dataSource").textContent = sourceLabel;
+      elements.statusNote.textContent = "Dashboard updated from the Excel report.";
+    };
+
+    const updateDashboard = (workbook) => {
+      const report = parseUpdatedReport(workbook);
+
+      if (!report) {
+        elements.statusNote.textContent = "Could not read the Updated Report sheet. Please check the workbook format.";
+        return;
+      }
+
+      let reportPeriod = "Reporting period";
+      if (report.periodCell) {
+        if (String(report.periodCell).toLowerCase().includes("updated report")) {
+          reportPeriod = String(report.periodCell).replace("Updated Report", "Reporting Period").trim();
+        } else {
+          reportPeriod = String(report.periodCell);
+        }
+      }
+
+      renderDashboard(
+        report,
+        reportPeriod,
+        `Data source: ${CONFIG.workbookFile}${report.sheetName ? ` (${report.sheetName})` : ""}`
+      );
+    };
+
+    const loadWorkbookFromArray = (data) => {
+      const workbook = XLSX.read(data, { type: "array" });
+      updateDashboard(workbook);
+    };
+
+    // ── Operational Insights Panel ─────────────────────────────────────
+    const renderInsightsGrid = (departments, totalSurgeries, totalClinics, totalAdmissions) => {
+      const grid = document.getElementById("insightsGrid");
+      if (!grid) return;
+
+      const topSurg = [...departments].sort((a, b) => b.surgeries - a.surgeries)[0];
+      const topClin = [...departments].sort((a, b) => b.clinics - a.clinics)[0];
+      const topAdm  = [...departments].sort((a, b) => b.admissions - a.admissions)[0];
+
+      const pct = (val, total) => total > 0 ? Math.round((val / total) * 100) : 0;
+      const surgShare   = pct(topSurg?.surgeries || 0, totalSurgeries);
+      const clinShare   = pct(topClin?.clinics || 0, totalClinics);
+      const admShare    = pct(topAdm?.admissions || 0, totalAdmissions);
+      const clinSurgPct = totalSurgeries > 0 ? Math.round((totalClinics / totalSurgeries) * 10) / 10 : 0;
+
+      const items = [
+        {
+          color: "navy",
+          label: "Highest Surgery Volume",
+          dept: topSurg?.name || "—",
+          stat: `${(topSurg?.surgeries || 0).toLocaleString()} surgeries · ${surgShare}% of total`,
+          pct: surgShare,
+        },
+        {
+          color: "teal",
+          label: "Highest Clinic Demand",
+          dept: topClin?.name || "—",
+          stat: `${(topClin?.clinics || 0).toLocaleString()} visits · ${clinShare}% of total`,
+          pct: clinShare,
+        },
+        {
+          color: "coral",
+          label: "Most Admissions",
+          dept: topAdm?.name || "—",
+          stat: `${(topAdm?.admissions || 0).toLocaleString()} admissions · ${admShare}% of total`,
+          pct: admShare,
+        },
+        {
+          color: "gold",
+          label: "Clinic-to-Surgery Ratio",
+          dept: `${clinSurgPct.toLocaleString()}× outpatient ratio`,
+          stat: `${totalClinics.toLocaleString()} clinic visits across ${totalSurgeries.toLocaleString()} surgeries`,
+          pct: Math.min(100, Math.round(clinSurgPct * 20)),
+        },
+      ];
+
+      grid.innerHTML = items.map((item) => `
+        <div class="insight-item ${item.color}">
+          <div class="insight-label">${item.label}</div>
+          <div class="insight-dept">${item.dept}</div>
+          <div class="insight-stat">${item.stat}</div>
+          <div class="insight-bar-wrap">
+            <div class="insight-bar-fill" data-target="${item.pct}" style="width:0"></div>
+          </div>
+        </div>
+      `).join("");
+
+      // Animate bars on next frame
+      requestAnimationFrame(() => {
+        grid.querySelectorAll(".insight-bar-fill").forEach((bar) => {
+          bar.style.width = bar.dataset.target + "%";
+        });
+      });
+    };
+
+    // ── Section reveal (IntersectionObserver) ─────────────────────
+    const initReveal = () => {
+      const targets = document.querySelectorAll(
+        ".card, .highlight-card, .chart-card, .table-card, .op-insights"
+      );
+      const prefersReduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      if (prefersReduced) return;
+
+      const obs = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              entry.target.classList.add("is-visible");
+              obs.unobserve(entry.target);
+            }
+          });
+        },
+        { threshold: 0.1, rootMargin: "0px 0px -40px 0px" }
+      );
+
+      targets.forEach((el) => {
+        el.classList.add("reveal-anim");
+        obs.observe(el);
+      });
+    };
+
+    initReveal();
+
+    const loadFallbackDashboard = () => {
+      renderDashboard(
+        FALLBACK_REPORT_DATA,
+        "Reporting Period 20 Jan - 18 Feb + 19 Feb - 18 March",
+        `Data source: Embedded backup from ${CONFIG.workbookFile} (First Month + Second Month)`
+      );
+      elements.statusNote.textContent =
+        "Live Excel could not be loaded. Showing the embedded backup data.";
+    };
+
+    const tryFetchWorkbook = async () => {
+      if (!ensureChartLibrary()) return;
+      try {
+        if (!window.XLSX) {
+          throw new Error("XLSX library unavailable");
+        }
+        const workbookUrl = new URL(CONFIG.workbookFile, window.location.href);
+        const response = await fetch(workbookUrl.toString());
+        if (!response.ok) throw new Error("Fetch failed");
+        const data = await response.arrayBuffer();
+        loadWorkbookFromArray(data);
+        elements.statusNote.textContent = "Dashboard updated from the Excel report.";
+      } catch (error) {
+        loadFallbackDashboard();
+      }
+    };
+
+    if (window.location.protocol.startsWith("http")) {
+      elements.shareLink.textContent = `Share link: ${window.location.href}`;
+      tryFetchWorkbook();
+    } else {
+      if (ensureChartLibrary()) {
+        loadFallbackDashboard();
+      }
+      elements.shareLink.textContent = "Share link: available when hosted";
+    }
+  </script>
+</body>
+</html>
